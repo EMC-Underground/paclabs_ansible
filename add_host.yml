@@ -1,0 +1,48 @@
+---
+- hosts: localhost
+  vars_files:
+    - ./esx_vars.yml
+  tasks:
+       - name: Add ESXi Host to VCSA
+         local_action:
+           module: vmware_host
+           hostname: "{{ vc_host }}"
+           username: "{{ vc_user }}"
+           password: "{{ vc_pass }}"
+           datacenter_name: "{{ vc_dc }}"
+           cluster_name: "{{ vc_cl}}"
+           esxi_hostname: "{{ esxi_host }}"
+           esxi_username: "{{ esxi_user }}"
+           esxi_password: "{{ esxi_pass }}"
+           state: present
+           validate_certs: False
+       - name: Add Host to dVS
+         local_action:
+           module: vmware_dvs_host
+           hostname: "{{ vc_host }}"
+           username: "{{ vc_user }}"
+           password: "{{ vc_pass }}"
+           esxi_hostname: "{{ esxi_host }}"
+           switch_name: ScaleIO_Data
+           vmnics:
+               - vmnic2
+               - vmnic3
+           state: present
+           validate_certs: False
+       - name: Add VMK to ScaleIO Network
+         local_action:
+           module: vmware_vmkernel
+           hostname: "{{ esxi_host }}"
+           username: "{{ esxi_user }}"
+           password: "{{ esxi_pass }}"
+           vswitch_name: ScaleIO_Data
+           ip_address: "192.168.10.9"
+           subnet_mask: "255.255.255.0"
+           portgroup_name: ScaleIO_Data1_PG
+           enable_mgmt: False
+           enable_vsan: False
+           enable_vmotion: False
+           enable_ft: False
+           vlan_id: 20
+           mtu: 1500
+           validate_certs: False

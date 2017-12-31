@@ -1,0 +1,30 @@
+---
+- hosts: localhost
+  vars_files:
+    - ./esx_vars.yml
+  tasks:
+    - name: Add a VMWare vSwitch with multiple NICs
+      local_action:
+        module: vmware_vswitch
+    hostname: esxi_hostname
+    username: esxi_username
+    password: esxi_password
+    switch: vmware_vswitch_0004
+    nics:
+    - vmnic1
+    - vmnic2
+    mtu: 9000
+  delegate_to: localhost
+    - name: Create dvswitch
+      local_action:
+        module: vmware_dvswitch
+        hostname: 10.4.44.11
+        username: administrator@pac.lab
+        password: Password#1
+        datacenter_name: Datacenter
+        switch_name: ansible_dvswitch
+        mtu: 9000
+        uplink_quantity: 2
+        discovery_proto: lldp
+        discovery_operation: both
+        state: present

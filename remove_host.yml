@@ -1,0 +1,38 @@
+---
+- hosts: localhost
+  vars:
+    vc_host: 10.4.44.11
+    vc_user: administrator@pac.lab
+    vc_pass: Password#1
+    esxi_host: 10.4.44.109
+    esxi_user: root
+    esxi_pass: password
+    vc_dc: Datacenter
+    vc_cl: cluster
+  tasks:
+       - name: Remove dVS Switch
+         local_action:
+           module: vmware_dvs_host
+           hostname: "{{ vc_host }}"
+           username: "{{ vc_user }}"
+           password: "{{ vc_pass }}"
+           esxi_hostname: "{{ esxi_host }}"
+           switch_name: ScaleIO_Data
+           vmnics:
+               - vmnic2
+               - vmnic3
+           state: absent
+           validate_certs: False 
+       - name: Remove ESXi Host to VCSA
+         local_action:
+           module: vmware_host
+           hostname: "{{ vc_host }}"
+           username: "{{ vc_user }}"
+           password: "{{ vc_pass }}"
+           datacenter_name: "{{ vc_dc }}"
+           cluster_name: "{{ vc_cl}}"
+           esxi_hostname: "{{ esxi_host }}"
+           esxi_username: "{{ esxi_user }}"
+           esxi_password: "{{ esxi_pass }}"
+           state: absent
+           validate_certs: False

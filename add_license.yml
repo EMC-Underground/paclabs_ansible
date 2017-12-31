@@ -1,0 +1,9 @@
+---
+- name: Add a new vCenter license
+  vcenter_license:
+    hostname: 10.4.44.11
+    username: administrator@pac.lab
+    password: Password#1
+    license: N0036-2CKD0-1839H-008AM-AJX0M
+    state: present
+  delegate_to: localhost

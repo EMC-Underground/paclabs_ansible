@@ -1,0 +1,71 @@
+---
+- hosts: localhost
+  vars:
+    vc_host: 10.4.44.11
+    vc_user: administrator@pac.lab
+    vc_pass: Password#1
+    esxi_host: 10.4.44.109
+    esxi_user: root
+    esxi_pass: password
+    vc_dc: Datacenter
+    vc_cl: cluster
+    vc_dvs: VM_6.0_DSwitch
+  tasks:
+       - name: Create Datacenter
+         local_action:
+           module: vmware_datacenter
+           hostname: "{{ vc_host }}"
+           username: "{{ vc_user }}"
+           password: "{{ vc_pass }}"
+           datacenter_name: "{{ vc_dc }}"
+           state: present
+           validate_certs: False
+       - name: Create Cluster
+         local_action:
+           module: vmware_cluster
+           hostname: "{{ vc_host }}"
+           username: "{{ vc_user }}"
+           password: "{{ vc_pass }}"
+           datacenter_name: "{{ vc_dc }}"
+           cluster_name: "{{ vc_cl}}"
+           enable_ha: yes
+           enable_drs: yes
+           enable_vsan: no
+           state: present
+           validate_certs: False
+       - name: Create DVSwitches
+         local_action:
+           module: vmware_dvswitch
+           hostname: "{{ vc_host }}"
+           username: "{{ vc_user }}"
+           password: "{{ vc_pass }}"
+           datacenter_name: "{{ vc_dc }}"
+           switch_name: "{{ vc_dvs }}"
+           mtu: 1500
+           uplink_quantity: 2
+           discovery_proto: cdp
+           discovery_operation: listen
+           state: present
+           validate_certs: False
+       - name: Add PortGroups to DVSwitch
+         local_action:
+           module: vmware_dvs_portgroup
+           hostname: "{{ vc_host }}"
+           username: "{{ vc_user }}"
+           password: "{{ vc_pass }}"
+           switch_name: "{{ vc_dvs }}"
+           portgroup_name: pxe_boot
+           num_ports: 2
+           portgroup_type: earlyBinding
+           vlan_id: 1
+           state: present
+           validate_certs: False
+       - name: Add a new vCenter license
+         local_action:
+           module: vcenter_license
+           hostname: "{{ vc_host }}"
+           username: "{{ vc_user }}"
+           password: "{{ vc_pass }}"
+           license: Z5483-0Y2EL-N8R8J-OXCAP-10P3N
+           state: present
+           validate_certs: False
