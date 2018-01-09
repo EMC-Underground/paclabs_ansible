@@ -1,0 +1,44 @@
+# PacLabs ESX/vCenter env vars
+esxi_user: 'root'
+esxi_pass: 'password'
+dns1: '10.4.44.254'
+dns2: '10.237.33.254'
+dns3: '10.201.16.29'
+domain: 'paclabs.se.lab.emc.com'
+gw: '10.4.44.1'
+mask: '255.255.255.0'
+dc: 'Datacenter'
+cl: 'cluster'
+dvs_vm: 'VM_6.0_DSwitch'
+dvs_sio: 'ScaleIO_Data'
+mgmt_pg: 'MGMT_6.0_DPortGroup'
+vm_pg: 'VM_6.0_DPortGroup'
+sio1_pg: 'ScaleIO_Data1_PG'
+sio2_pg: 'ScaleIO_Data2_PG'
+siotemp1: 'sio_temp_pg1'
+siotemp2: 'sio_temp_pg2'
+vl345_pg: 'PG_345'
+vl344: '344'
+vl345: '345'
+
+# Vcenter variables
+vc_host: 10.4.44.11
+vc_user: 'administrator@pac.lab'
+vc_pass: 'Password#1'
+vc_dc: 'Datacenter'
+vc_cl: 'cluster'
+
+R710:
+  
+  # esx108:
+  #   esxi_host: 10.4.44.108
+  #   ds: 'PacLabs008_Boot'
+  #   vmk1: '10.4.44.108'
+  #   vmk2: '192.168.10.8'
+  #   vmk3: '192.168.11.8'
+  PacLabs009:
+    esxi_host: 10.4.44.109
+    ds: 'PacLabs009_Boot'
+    vmk0: '10.4.44.109'
+    vmk1: '192.168.10.9'
+    vmk2: '192.168.11.9'

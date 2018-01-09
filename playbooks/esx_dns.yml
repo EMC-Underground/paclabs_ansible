@@ -1,0 +1,20 @@
+---
+- name: Update DNS records for ESX
+  hosts: localhost
+  vars_files:
+    - ./esx_vars.yml
+  tasks:
+    - name: Change DNS entries on ESX Servers
+      local_action:
+        module: vmware_dns_config
+        hostname: "{{ item.value.esxi_host }}"
+        username: "{{ esxi_user }}"
+        password: "{{ esxi_pass }}"
+        change_hostname_to: "{{ item.key }}"
+        domainname: "{{ domain }}"
+        dns_servers:
+          - "{{ dns1 }}"
+          - "{{ dns2 }}"
+          - "{{ dns3 }}"
+        validate_certs: False
+      with_dict: "{{ R710 }}"

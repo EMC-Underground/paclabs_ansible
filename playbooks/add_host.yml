@@ -1,0 +1,102 @@
+---
+- hosts: localhost
+  vars_files:
+    - ./esx_vars.yml
+  tasks:
+   - name: Add ESXi Host to VCSA
+     local_action:
+       module: vmware_host
+       hostname: "{{ vc_host }}"
+       username: "{{ vc_user }}"
+       password: "{{ vc_pass }}"
+       datacenter_name: "{{ vc_dc }}"
+       cluster_name: "{{ vc_cl}}"
+       esxi_hostname: "{{ item.value.esxi_host }}"
+       esxi_username: "{{ esxi_user }}"
+       esxi_password: "{{ esxi_pass }}"
+       state: present
+       validate_certs: False
+     with_dict: "{{ R710 }}"
+   - name: Add Host to dVS VMNetwork
+     local_action:
+       module: vmware_dvs_host
+       hostname: "{{ vc_host }}"
+       username: "{{ vc_user }}"
+       password: "{{ vc_pass }}"
+       esxi_hostname: "{{ item.value.esxi_host }}"
+       switch_name: "{{ dvs_vm }}"
+       vmnics:
+           - vmnic1
+       state: present
+       validate_certs: False
+     with_dict: "{{ R710 }}"
+   - name: Add Host to dVS ScaleIO 
+     local_action:
+       module: vmware_dvs_host
+       hostname: "{{ vc_host }}"
+       username: "{{ vc_user }}"
+       password: "{{ vc_pass }}"
+       esxi_hostname: "{{ item.value.esxi_host }}"
+       switch_name: "{{ dvs_sio }}"
+       vmnics:
+           - vmnic2
+           - vmnic3
+       state: present
+       validate_certs: False
+     with_dict: "{{ R710 }}"
+   - name: Migrate vmk1 to the new VDS
+     local_action:
+       module: vmware_migrate_vmk
+       hostname: "{{ vc_host }}"
+       username: "{{ vc_user }}"
+       password: "{{ vc_pass }}"
+       esxi_hostname: "{{ item.value.esxi_host }}"
+       device: vmk1
+       current_switch_name: vSwitch0
+       current_portgroup_name: "{{ siotemp1 }}"
+       migrate_switch_name: "{{ dvs_sio }}"
+       migrate_portgroup_name: "{{ sio1_pg }}"
+       validate_certs: False
+     with_dict: "{{ R710 }}"
+   - name: Migrate vmk2 to the new VDS
+     local_action:
+        module: vmware_migrate_vmk
+        hostname: "{{ vc_host }}"
+        username: "{{ vc_user }}"
+        password: "{{ vc_pass }}"
+        esxi_hostname: "{{ item.value.esxi_host }}"
+        device: vmk2
+        current_switch_name: vSwitch0
+        current_portgroup_name: "{{ siotemp2 }}"
+        migrate_switch_name: "{{ dvs_sio }}"
+        migrate_portgroup_name: "{{ sio2_pg }}"
+        validate_certs: False
+     with_dict: "{{ R710 }}"
+   - name: Migrate vmk0 to the new VDS
+     local_action:
+        module: vmware_migrate_vmk
+        hostname: "{{ vc_host }}"
+        username: "{{ vc_user }}"
+        password: "{{ vc_pass }}"
+        esxi_hostname: "{{ item.value.esxi_host }}"
+        device: vmk0
+        current_switch_name: vSwitch0
+        current_portgroup_name: 'Management Network'
+        migrate_switch_name: "{{ dvs_vm }}"
+        migrate_portgroup_name: "{{ mgmt_pg }}"
+        validate_certs: False
+     with_dict: "{{ R710 }}"
+   - name: Add Host to dVS VMNetwork
+     local_action:
+       module: vmware_dvs_host
+       hostname: "{{ vc_host }}"
+       username: "{{ vc_user }}"
+       password: "{{ vc_pass }}"
+       esxi_hostname: "{{ item.value.esxi_host }}"
+       switch_name: "{{ dvs_vm }}"
+       vmnics:
+           - vmnic0
+           - vmnic1
+       state: present
+       validate_certs: False
+     with_dict: "{{ R710 }}"

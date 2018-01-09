@@ -1,9 +1,0 @@
----
-- hosts: "{{ esxi_host }}"
-  vars_files:
-    - ./esx_vars.yml
-  remote_user: root
-  tasks:
-       - name: run ls on remote server
-         local_action:
-           command: ls

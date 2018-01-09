@@ -1,0 +1,55 @@
+---
+- hosts: "10.4.44.109"
+  vars_files:
+    - ./esx_vars.yml
+  remote_user: root
+  #remote_password: password
+  tasks:
+    - name: Check current datastore name
+      command: "/bin/vim-cmd hostsvc/datastore/listsummary"
+      register: listsummary
+    - debug: msg="{{ listsummary.stdout_lines }}"
+
+    - name: Change ESXI Datastore Name
+      command: "/bin/vim-cmd hostsvc/datastore/rename datastore1 {{ item.value.ds }}"
+      register: vim_cmd
+      with_dict: "{{ R710 }}"
+
+    - name: Check current new datastore name
+      command: "/bin/vim-cmd hostsvc/datastore/listsummary"
+      register: listsummary
+    - debug: msg="{{ listsummary.stdout_lines }}"
+
+    - name: Check if ntp file exists
+      stat: path=/etc/ntp.conf
+      register: ntp_stat
+
+    - name: Backup NTP file
+      command: "/bin/mv /etc/ntp.conf /etc/ntp.conf.bak"
+      when: ntp_stat.stat.exists
+
+    #- name: set NTP servers up
+    - copy:
+        src: ./files/ntp.conf
+        dest: /etc/ntp.conf
+        owner: root
+        group: root
+        mode: 0644
+
+    - name: turn NTP services on
+      command: "/bin/chkconfig ntpd on"
+
+    - name: show ntpd status
+      command: "/bin/chkconfig --list ntpd"
+      register: ntpd_status
+    - debug: msg="{{ ntpd_status.stdout_lines }}"
+
+    - name: Restart ntp services
+      command: "/etc/init.d/ntpd restart"
+      register: ntpdrestart
+    - debug: msg="{{ ntpdrestart.stdout_lines }}"
+
+    - name: List NTP servers
+      command: "/bin/ntpq -p"
+      register: ntp_servers
+    - debug: msg="{{ ntp_servers.stdout_lines}}"

@@ -1,0 +1,79 @@
+---
+- name: Creat temp vmks for migration later
+  hosts: localhost
+  vars_files:
+    - ./esx_vars.yml
+  tasks:
+    # - name: Add a VMWare vSwitch with multiple NICs
+    #   local_action:
+    #     module: vmware_vswitch
+    #     hostname: "{{ item.value.esxi_host }}"
+    #     username: "{{ esxi_user }}"
+    #     password: "{{ esxi_pass }}"
+    #     switch: sio_temp
+    #     nics:
+    #     - vmnic2
+    #     - vmnic3
+    #     mtu: 1500
+    #     state: present
+    #     validate_certs: False
+    #   with_dict: "{{ R710 }}"
+    # - name: Add Management Network VM Portgroup 1
+    #   local_action:
+    #     module: vmware_portgroup
+    #     hostname: "{{ item.value.esxi_host }}"
+    #     username: "{{ esxi_user }}"
+    #     password: "{{ esxi_pass }}"
+    #     switch_name: sio_temp
+    #     portgroup_name: "sio_temp_pg1"
+    #     vlan_id: 20
+    #     validate_certs: False
+    #   with_dict: "{{ R710 }}"
+    # - name: Add Management Network VM Portgroup 2
+    #   local_action:
+    #     module: vmware_portgroup
+    #     hostname: "{{ item.value.esxi_host }}"
+    #     username: "{{ esxi_user }}"
+    #     password: "{{ esxi_pass }}"
+    #     switch_name: sio_temp
+    #     portgroup_name: "sio_temp_pg2"
+    #     vlan_id: 20
+    #     validate_certs: False
+    #   with_dict: "{{ R710 }}"
+    - name: Create VMK for ScaleIO Network 1
+      local_action:
+        module: vmware_vmkernel
+        hostname: "{{ item.value.esxi_host }}"
+        username: "{{ esxi_user }}"
+        password: "{{ esxi_pass }}"
+        vswitch_name: vSwitch0
+        ip_address: "{{ item.value.vmk1 }}"
+        subnet_mask: "{{ mask }}"
+        portgroup_name: "sio_temp_pg1"
+        enable_mgmt: False
+        enable_vsan: False
+        enable_vmotion: False
+        enable_ft: False
+        vlan_id: 20
+        mtu: 1500
+        validate_certs: False
+      with_dict: "{{ R710 }}"
+    - name: Create VMK for ScaleIO Network 2
+      local_action:
+        module: vmware_vmkernel
+        hostname: "{{ item.value.esxi_host }}"
+        username: "{{ esxi_user }}"
+        password: "{{ esxi_pass }}"
+        vswitch_name: vSwitch0
+        ip_address: "{{ item.value.vmk2 }}"
+        subnet_mask: "{{ mask }}"
+        portgroup_name: "sio_temp_pg2"
+        enable_mgmt: False
+        enable_vsan: False
+        enable_vmotion: False
+        enable_ft: False
+        vlan_id: 20
+        mtu: 1500
+        validate_certs: False
+      with_dict: "{{ R710 }}"
+
