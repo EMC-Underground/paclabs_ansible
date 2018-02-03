@@ -1,0 +1,32 @@
+---
+- hosts: "10.4.44.109"
+  vars_files:
+    - ./esx_vars.yml
+  remote_user: root
+
+  tasks:
+    - shell: "cat /proc/sys/kernel/random/uuid"
+      register: uuid
+      delegate_to: localhost
+    - debug:
+        msg: "{{ uuid.stdout_lines }}"
+
+    - name: Check Scalio VIB installed
+      command: "/bin/esxcli software vib get -n scaleio-sdc-esx6.0"
+      register: sio_present
+    - debug:
+        msg: "{{ sio_present.stdout_lines }}"
+
+    - name: Configure ScaleIO VIB UUID
+      when: sio_present.stdout.find("scaleio-sdc-esx6.0")
+      command: '/bin/esxcli system module parameters set -m scini -p "IoctlIniGuidStr={{ uuid.stdout_lines[0] }} IoctlMdmIPStr={{ mdm1 }},{{ mdm2 }}"'
+      register: sio_uuid
+    - debug:
+        msg: "{{ sio_uuid.stdout_lines }}"
+
+    - name: Load the scini module
+      command: "/bin/esxcli system module load -m scini"
+      register: sio_load
+    - debug:
+        msg: "{{ sio_load.stdout_lines }}"
+

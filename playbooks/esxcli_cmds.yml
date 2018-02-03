@@ -30,7 +30,7 @@
 
     #- name: set NTP servers up
     - copy:
-        src: ./files/ntp.conf
+        src: ../files/ntp.conf
         dest: /etc/ntp.conf
         owner: root
         group: root

@@ -52,7 +52,7 @@
        password: "{{ vc_pass }}"
        esxi_hostname: "{{ item.value.esxi_host }}"
        device: vmk1
-       current_switch_name: vSwitch0
+       current_switch_name: "{{ esxivs }}"
        current_portgroup_name: "{{ siotemp1 }}"
        migrate_switch_name: "{{ dvs_sio }}"
        migrate_portgroup_name: "{{ sio1_pg }}"
@@ -66,7 +66,7 @@
         password: "{{ vc_pass }}"
         esxi_hostname: "{{ item.value.esxi_host }}"
         device: vmk2
-        current_switch_name: vSwitch0
+        current_switch_name: "{{ esxivs }}"
         current_portgroup_name: "{{ siotemp2 }}"
         migrate_switch_name: "{{ dvs_sio }}"
         migrate_portgroup_name: "{{ sio2_pg }}"
@@ -80,12 +80,29 @@
         password: "{{ vc_pass }}"
         esxi_hostname: "{{ item.value.esxi_host }}"
         device: vmk0
-        current_switch_name: vSwitch0
+        current_switch_name: "{{ esxivs }}"
         current_portgroup_name: 'Management Network'
         migrate_switch_name: "{{ dvs_vm }}"
         migrate_portgroup_name: "{{ mgmt_pg }}"
         validate_certs: False
      with_dict: "{{ R710 }}"
+   - name: Remove old vSwitch0 to free up vmnic0  
+     local_action:
+       module: vmware_vswitch
+       hostname: "{{ item.value.esxi_host }}"
+       username: "{{ esxi_user }}"
+       password: "{{ esxi_pass }}"
+       switch: "{{ esxivs }}"
+       nics:
+         - vmnic0
+       mtu: 1500
+       state: absent
+       validate_certs: False
+     with_dict: "{{ R710 }}"
+
+   #- pause: 
+   #    seconds: 15
+
    - name: Add Host to dVS VMNetwork
      local_action:
        module: vmware_dvs_host

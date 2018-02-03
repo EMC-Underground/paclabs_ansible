@@ -2,5 +2,8 @@
 packer_cache/
 old
 *.old
+*.retry
+*.vib
+.gitignore
 # For built boxes
 *.box

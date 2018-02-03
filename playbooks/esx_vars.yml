@@ -11,6 +11,7 @@ dc: 'Datacenter'
 cl: 'cluster'
 dvs_vm: 'VM_6.0_DSwitch'
 dvs_sio: 'ScaleIO_Data'
+esxivs: 'vswitch0'
 mgmt_pg: 'MGMT_6.0_DPortGroup'
 vm_pg: 'VM_6.0_DPortGroup'
 sio1_pg: 'ScaleIO_Data1_PG'
@@ -20,6 +21,8 @@ siotemp2: 'sio_temp_pg2'
 vl345_pg: 'PG_345'
 vl344: '344'
 vl345: '345'
+mdm1: '192.168.10.99'
+mdm2: '192.168.11.99'
 
 # Vcenter variables
 vc_host: 10.4.44.11

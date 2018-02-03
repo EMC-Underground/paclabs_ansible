@@ -1,0 +1,89 @@
+---
+- hosts: "10.4.44.109"
+  vars_files:
+    - ./esx_vars.yml
+  remote_user: root
+
+  tasks:
+    - shell: "cat /proc/sys/kernel/random/uuid"
+      register: uuid
+      delegate_to: localhost
+    - debug:
+        msg: "{{ uuid.stdout_lines }}"
+    - name: Install UI VIB for ESXi 6.0.0 U2
+      command: "/bin/esxcli software vib install -v http://download3.vmware.com/software/vmw-tools/esxui/esxui-signed-latest.vib"
+      register: ui_vib
+    - debug: msg="{{ ui_vib.stdout_lines }}"
+
+    - name: Set acceptance for ESXi to VMwareAccepted
+      command: "/bin/esxcli software acceptance set --level=PartnerSupported"
+      register: software_level
+    - debug: msg="{{ software_level.stdout_lines }}"
+
+    - copy:
+        src: ../files/sdc-2.0.14000.123-esx6.0.zip
+        dest: /tmp/
+        owner: root
+        group: root
+        mode: 0644
+
+    - name: Install scini VIB (Requires Reboot)
+      command: "/bin/esxcli software vib install -d /tmp/sdc-2.0.14000.123-esx6.0.zip"
+      register: vib_install
+    - debug: 
+        msg: "{{ vib_install.stdout_lines }}"
+
+    - name: Validate VIB was installed and delete file to trigger reboot
+      when: vib_install.stdout.find("Reboot") != -1
+      file: 
+        path: "/tmp/sdc-2.0.14000.123-esx6.0.zip" 
+        state: absent
+      notify: reboot sequence
+
+    - name: Check Scalio VIB installed
+      command: "/bin/esxcli software vib get -n scaleio-sdc-esx6.0"
+      register: sio_present
+    - debug:
+        msg: "{{ sio_present.stdout_lines }}"
+
+    - name: Configure ScaleIO VIB UUID
+      when: sio_present.stdout.find("scaleio-sdc-esx6.0")
+      command: '/bin/esxcli system module parameters set -m scini -p "IoctlIniGuidStr={{ uuid.stdout_lines[0] }} IoctlMdmIPStr={{ mdm1 }},{{ mdm2 }}"'
+      register: sio_uuid
+    - debug:
+        msg: "{{ sio_uuid.stdout_lines }}"
+
+    - name: Load the scini module
+      command: "/bin/esxcli system module load -m scini"
+      register: sio_load
+      notify; reboot sequence
+
+    - debug:
+        msg: "{{ sio_load.stdout_lines }}"
+
+  handlers:
+    - name: reboot sequence
+      changed_when: "true"
+      debug: msg='trigger machine reboot sequence'
+      notify:
+        - get current time
+        - reboot system
+        - waiting for server to come back
+        - verify a reboot was actually initiated
+    - name: get current time
+      command: "/bin/date"
+      register: before_reboot
+    - debug:
+        msg: "{{ before_reboot.stdout_lines }} Current time on Server"
+    - name: reboot system
+      command: "/bin/reboot -n -f"
+      ignore_errors: true
+    - name: waiting for server to come back
+      local_action: wait_for host={{ inventory_hostname }} state=started delay=30 #timeout=220
+      sudo: false
+    - name: verify a reboot was actually initiated
+      # machine should have started after it has been rebooted
+      command: "/bin/uptime"
+      register: esx_uptime
+    - debug:
+        msg: "{{ esx_uptime.stdout_lines }}"
