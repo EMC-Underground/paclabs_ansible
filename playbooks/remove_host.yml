@@ -4,7 +4,7 @@
     vc_host: 10.4.44.11
     vc_user: administrator@pac.lab
     vc_pass: Password#1
-    esxi_host: 10.4.44.109
+    esxi_host: 10.4.44.104
     esxi_user: root
     esxi_pass: password
     vc_dc: Datacenter
@@ -19,8 +19,21 @@
            esxi_hostname: "{{ esxi_host }}"
            switch_name: ScaleIO_Data
            vmnics:
-               - vmnic2
+               - vmnic0
+               - vmnic1
+           state: absent
+           validate_certs: False 
+       - name: Remove dVS Switch
+         local_action:
+           module: vmware_dvs_host
+           hostname: "{{ vc_host }}"
+           username: "{{ vc_user }}"
+           password: "{{ vc_pass }}"
+           esxi_hostname: "{{ esxi_host }}"
+           switch_name: VM_6.0_DSwitch
+           vmnics:
                - vmnic3
+              # - vmnic1
            state: absent
            validate_certs: False 
        - name: Remove ESXi Host to VCSA

@@ -46,10 +46,10 @@
         hostname: "{{ item.value.esxi_host }}"
         username: "{{ esxi_user }}"
         password: "{{ esxi_pass }}"
-        vswitch_name: vSwitch0
+        vswitch_name: "{{ esxivs }}"
         ip_address: "{{ item.value.vmk1 }}"
         subnet_mask: "{{ mask }}"
-        portgroup_name: "sio_temp_pg1"
+        portgroup_name: "{{ siotemp1 }}"
         enable_mgmt: False
         enable_vsan: False
         enable_vmotion: False
@@ -64,10 +64,10 @@
         hostname: "{{ item.value.esxi_host }}"
         username: "{{ esxi_user }}"
         password: "{{ esxi_pass }}"
-        vswitch_name: vSwitch0
+        vswitch_name: "{{ esxivs }}"
         ip_address: "{{ item.value.vmk2 }}"
         subnet_mask: "{{ mask }}"
-        portgroup_name: "sio_temp_pg2"
+        portgroup_name: "{{ siotemp2 }}"
         enable_mgmt: False
         enable_vsan: False
         enable_vmotion: False
